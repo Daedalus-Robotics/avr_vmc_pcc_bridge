@@ -11,8 +11,9 @@ using namespace std::chrono_literals;
 
 
 namespace pcc_bridge {
-    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", options),
-                                                                       port("", 115200), dataQueue() {
+    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options),
+                                                                       port("", 115200), dataQueue(),
+                                                                       ledComponent(), servoComponent() {
         openPort();
 
         readTimer = this->create_wall_timer(5ms, [this] { readLoop(); });
@@ -20,6 +21,7 @@ namespace pcc_bridge {
 
     void PCCBridgeNode::setup() {
         ledComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
+        servoComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
     }
 
     void PCCBridgeNode::openPort() {
@@ -38,7 +40,6 @@ namespace pcc_bridge {
 
     void PCCBridgeNode::readLoop() {
     	if (port.isOpen()) {
-
     	     uint8_t currentByte;
              if (port.available() > 0) {
                  if (dataQueue.size() >= MESSAGE_BUF_LEN) {
@@ -55,7 +56,18 @@ namespace pcc_bridge {
     	            dataQueue.clear();
     	            switch (message->identifier) {
     	              case TOPIC_STATUS:
-    	                  RCLCPP_INFO(get_logger(), "Got status: %u", message->data[0]);
+                          switch (message->data[0]) {
+                              case STATUS_READY:
+                                  ledComponent.sendUpdate();
+                                  servoComponent.sendUpdate();
+                                  RCLCPP_INFO(get_logger(), "PCC Ready");
+                                  break;
+                              case STATUS_RESET:
+                                  RCLCPP_INFO(get_logger(), "PCC Resetting");
+                                  break;
+                              case STATUS_HALT:
+                                  RCLCPP_ERROR(get_logger(), "PCC Halted");
+                          }
     	                  break;
                       case TOPIC_ERROR:
                           RCLCPP_ERROR(get_logger(), "Got error: %u", message->data[0]);
@@ -65,12 +77,9 @@ namespace pcc_bridge {
                     }
     	        }
     	    }
-
     	} else {
-
     		port.close();
     		openPort();
-
     	}
     }
 
@@ -98,6 +107,8 @@ int main(int argc, char *argv[])
     node->setup();
 
     rclcpp::spin(node);
+
+    printf("Hello");
 
     rclcpp::shutdown();
     return 0;

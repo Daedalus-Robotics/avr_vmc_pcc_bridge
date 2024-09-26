@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "crc15can.hpp"
+#include "endianness.hpp"
 
 #define MESSAGE_BUF_LEN sizeof(message_t)
 #define SOL_NUM 0b1111111111111111
@@ -18,7 +19,9 @@ struct message_t {
 #pragma pack()
 
 inline uint16_t get_crc(const message_t *message) {
-    return crc15can_byte(0, message->data, MESSAGE_BUF_LEN);
+    return byte_swap<host_endian, little_endian>(
+        crc15can_byte(0, message->data, MESSAGE_BUF_LEN)
+    );
 }
 
 inline void append_crc(message_t *message) {

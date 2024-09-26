@@ -7,6 +7,7 @@
 #include "pcc_bridge/comm.hpp"
 
 #include "pcc_bridge/led_component.hpp"
+#include "pcc_bridge/servo_component.hpp"
 
 namespace pcc_bridge
 {
@@ -25,6 +26,7 @@ namespace pcc_bridge
         rclcpp::TimerBase::SharedPtr readTimer;
 
         LedComponent ledComponent;
+        ServoComponent servoComponent;
 
         void openPort();
         void sendMessage(message_t *message);

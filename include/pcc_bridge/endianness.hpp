@@ -2,7 +2,7 @@
 
 #include <boost/type_traits.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/detail/endian.hpp>
+#include <boost/predef/other/endian.h>
 #include <stdexcept>
 #include <cstdint>
 
@@ -12,9 +12,9 @@ enum endianness
     big_endian,
     network_endian = big_endian,
 
-    #if defined(BOOST_LITTLE_ENDIAN)
+    #if defined(BOOST_ENDIAN_LITTLE_BYTE)
         host_endian = little_endian
-    #elif defined(BOOST_BIG_ENDIAN)
+    #elif defined(BOOST_ENDIAN_BIG_BYTE)
         host_endian = big_endian
     #else
         #error "unable to determine system endianness"
