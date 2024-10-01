@@ -16,6 +16,7 @@
 
 #define TOPIC_SERVO_ENABLE 6
 #define TOPIC_SERVO_SET 7
+#define TOPIC_SERVO_SPAN 8
 
 // Response topic (mcu-host)
 #define TOPIC_ERROR 0

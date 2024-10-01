@@ -20,6 +20,12 @@ namespace pcc_bridge {
                 setCallback(request, response);
             }
         );
+        spanService = node->create_service<avr_vmc_pcc_interfaces::srv::SpanServos>(
+            "span_servos",
+            [this](std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Request> request, std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Response> response) {
+                spanCallback(request, response);
+            }
+        );
     }
 
     void ServoComponent::sendEnabledUpdate() {
@@ -36,9 +42,7 @@ namespace pcc_bridge {
         message.data[0] = num;
 
         auto microsecondsPtr = (uint16_t *) &message.data[1];
-        printf("Value: %ul \n", microsecondsArr[num]);
-        *microsecondsPtr = byte_swap<host_endian, little_endian>(microsecondsArr[num]);
-        //*microsecondsPtr = microsecondsArr[num];
+        *microsecondsPtr = microsecondsArr[num];
 
         sendMessage(&message);
     }
@@ -60,8 +64,24 @@ namespace pcc_bridge {
     }
 
     void ServoComponent::setCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetServo::Request> request,
-                                     std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetServo::Response> _) {
+                                     __attribute__((unused)) std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetServo::Response> _) {
         microsecondsArr[request->servo] = request->microseconds;
         sendSingleUpdate(request->servo);
+    }
+
+    void ServoComponent::spanCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Request> request,
+                                      __attribute__((unused)) std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Response> _) {
+        message_t message;
+        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_SPAN);
+        message.data[0] = request->servo;
+        message.data[1] = request->span;
+
+        auto microsecondsArrPtr = (uint16_t *) &message.data[2];
+        for (uint8_t i = 0; i < request->span; i++) {
+        	microsecondsArr[i + request->servo] = request->microseconds_arr[i];
+        	microsecondsArrPtr[i] = request->microseconds_arr[i];
+        }
+
+        sendMessage(&message);
     }
 }

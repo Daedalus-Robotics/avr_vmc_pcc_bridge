@@ -7,6 +7,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 #include <avr_vmc_pcc_interfaces/srv/set_servo.hpp>
+#include <avr_vmc_pcc_interfaces/srv/span_servos.hpp>
 
 #include "pcc_bridge/comm.hpp"
 
@@ -27,13 +28,16 @@ namespace pcc_bridge {
 
         std::function<void(message_t *)> sendMessage;
 
-        rclcpp::Service<avr_vmc_pcc_interfaces::srv::SetServo>::SharedPtr setService;
         rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr enabledService;
+        rclcpp::Service<avr_vmc_pcc_interfaces::srv::SetServo>::SharedPtr setService;
+        rclcpp::Service<avr_vmc_pcc_interfaces::srv::SpanServos>::SharedPtr spanService;
 
         void enabledCallback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
                              std::shared_ptr<std_srvs::srv::SetBool::Response> _);
         void setCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetServo::Request> request,
                          std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetServo::Response> _);
+        void spanCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Request> request,
+                          std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Response> _);
     };
 
 }
