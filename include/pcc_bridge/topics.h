@@ -42,3 +42,8 @@
 
 // Component Codes
 #define COMPONENT_THERMAL 0
+#define COMPONENT_SERVOS 1
+
+// Error Types
+#define ERROR_TYPE 0
+#define ERROR_TYPE_RESOLVED 1

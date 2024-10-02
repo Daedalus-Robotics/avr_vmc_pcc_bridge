@@ -49,9 +49,18 @@ namespace pcc_bridge {
 
     void ServoComponent::sendUpdate() {
         sendEnabledUpdate();
-        for (size_t i = 0; i < 8; i++) {
-            sendSingleUpdate(i);
+
+        message_t message;
+        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_SPAN);
+        message.data[0] = 0;
+        message.data[1] = 8;
+
+        auto microsecondsArrPtr = (uint16_t *) &message.data[2];
+        for (uint8_t i = 0; i < 8; i++) {
+        	microsecondsArrPtr[i] = microsecondsArr[i];
         }
+
+        sendMessage(&message);
     }
 
     void ServoComponent::enabledCallback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,

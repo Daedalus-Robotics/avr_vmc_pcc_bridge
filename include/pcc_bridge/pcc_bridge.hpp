@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
 #include <serial/serial.h>
@@ -20,6 +21,8 @@ namespace pcc_bridge
         void readLoop();
 
     private:
+        std::atomic<bool> isOpening;
+
         serial::Serial port;
         std::vector<uint8_t> dataQueue;
 
