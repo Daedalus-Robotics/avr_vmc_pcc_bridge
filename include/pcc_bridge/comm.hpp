@@ -28,7 +28,5 @@ inline void append_crc(message_t *message) {
 }
 
 inline bool checkCrc(const message_t *message) {
-    printf("topic: %u\n", message->identifier, get_crc(message));
-    printf("in-message: %u, checked: %u\n", message->crc, get_crc(message));
     return message->crc == get_crc(message);
 }

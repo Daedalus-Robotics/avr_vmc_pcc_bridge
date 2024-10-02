@@ -33,16 +33,19 @@ namespace pcc_bridge {
 	            std::string name = entry.path().filename().string();
 
 	            if (name.rfind("ttyACM", 0) == 0) {
-	                port.setPort(entry.path().c_str());
-	                port.open();
-	                RCLCPP_INFO(get_logger(), "Port Opened");
-	                break;
+	                try {
+		                port.setPort(entry.path().c_str());
+		                port.open();
+		                RCLCPP_INFO(get_logger(), "Port Opened");
+		                break;
+		            } catch (...) {}
 	            }
 	        }
         }
     }
 
     void PCCBridgeNode::readLoop() {
+        readTimer->cancel();
         if (!isOpening.load()) {
 	        try {
 		    	if (port.isOpen()) {
@@ -107,11 +110,11 @@ namespace pcc_bridge {
 		        isOpening = true;
 	    		openPort();
 	    		isOpening = false;
-	    		RCLCPP_WARN(get_logger(), "Doneeeeds");
 
 	            ledComponent.sendUpdate();
 	            servoComponent.sendUpdate();
 		    }
+		    readTimer->reset();
 	    }
     }
 
