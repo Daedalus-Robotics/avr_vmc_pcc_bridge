@@ -57,7 +57,7 @@ namespace pcc_bridge {
 
         auto microsecondsArrPtr = (uint16_t *) &message.data[2];
         for (uint8_t i = 0; i < 8; i++) {
-        	microsecondsArrPtr[i] = microsecondsArr[i];
+            microsecondsArrPtr[i] = microsecondsArr[i];
         }
 
         sendMessage(&message);
@@ -87,8 +87,8 @@ namespace pcc_bridge {
 
         auto microsecondsArrPtr = (uint16_t *) &message.data[2];
         for (uint8_t i = 0; i < request->span; i++) {
-        	microsecondsArr[i + request->servo] = request->microseconds_arr[i];
-        	microsecondsArrPtr[i] = request->microseconds_arr[i];
+            microsecondsArr[i + request->servo] = request->microseconds_arr[i];
+            microsecondsArrPtr[i] = request->microseconds_arr[i];
         }
 
         sendMessage(&message);
