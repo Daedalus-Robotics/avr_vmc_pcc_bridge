@@ -21,7 +21,7 @@ namespace pcc_bridge
         void readLoop();
 
     private:
-        std::atomic<bool> isOpening;
+        std::atomic<bool> connected;
 
         serial::Serial port;
         std::vector<uint8_t> dataQueue;
