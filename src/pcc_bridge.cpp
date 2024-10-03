@@ -15,9 +15,16 @@ namespace pcc_bridge {
                                                                        connected(false),
                                                                        port("", 115200), dataQueue(),
                                                                        ledComponent(), servoComponent() {
-        openPort();
-
         readTimer = this->create_wall_timer(5ms, [this] { readLoop(); });
+
+        resetService = node->create_service<std_srvs::srv::Trigger>(
+            "reset",
+            [this](std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+                resetCallback(request, response);
+            }
+        );
+
+        openPort();
 
         setup();
         sendFullUpdate();
@@ -145,6 +152,14 @@ namespace pcc_bridge {
                 RCLCPP_ERROR(get_logger(), "Failed to send message using serial port");
             }
         }
+    }
+
+    void PCCBridgeNode::resetCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> _,
+                                      std::shared_ptr<std_srvs::srv::Trigger::Response> _) {
+        message_t message;
+        message->identifier = TOPIC_RESET;
+
+        sendMessage(&message);
     }
 }
 
