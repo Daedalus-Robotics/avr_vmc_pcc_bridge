@@ -30,7 +30,7 @@ namespace pcc_bridge {
 
     void ServoComponent::sendEnabledUpdate() {
         message_t message;
-        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_ENABLE);
+        message.identifier = TOPIC_SERVO_ENABLE;
         message.data[0] = enabled;
 
         sendMessage(&message);
@@ -38,7 +38,7 @@ namespace pcc_bridge {
 
     void ServoComponent::sendSingleUpdate(uint8_t num) {
         message_t message;
-        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_SET);
+        message.identifier = TOPIC_SERVO_SET;
         message.data[0] = num;
 
         auto microsecondsPtr = (uint16_t *) &message.data[1];
@@ -51,7 +51,7 @@ namespace pcc_bridge {
         sendEnabledUpdate();
 
         message_t message;
-        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_SPAN);
+        message.identifier = TOPIC_SERVO_SPAN;
         message.data[0] = 0;
         message.data[1] = 8;
 
@@ -81,7 +81,7 @@ namespace pcc_bridge {
     void ServoComponent::spanCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Request> request,
                                       __attribute__((unused)) std::shared_ptr<avr_vmc_pcc_interfaces::srv::SpanServos::Response> _) {
         message_t message;
-        message.identifier = TOPIC_CONVERT(TOPIC_SERVO_SPAN);
+        message.identifier = TOPIC_SERVO_SPAN;
         message.data[0] = request->servo;
         message.data[1] = request->span;
 

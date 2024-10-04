@@ -15,11 +15,13 @@ namespace pcc_bridge {
                                                                        connected(false),
                                                                        port("", 115200), dataQueue(),
                                                                        ledComponent(), servoComponent() {
-        readTimer = this->create_wall_timer(5ms, [this] { readLoop(); });
+        readTimer = create_wall_timer(5ms, [this] { readLoop(); }, create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive));
+        syncTimer = create_wall_timer(100ms, [this] { sendFullUpdate(); });
+        syncTimer->cancel();
 
-        resetService = node->create_service<std_srvs::srv::Trigger>(
+        resetService = create_service<std_srvs::srv::Trigger>(
             "reset",
-            [this](std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
+            [this](const std::shared_ptr<std_srvs::srv::Trigger::Request> request, std::shared_ptr<std_srvs::srv::Trigger::Response> response) {
                 resetCallback(request, response);
             }
         );
@@ -36,6 +38,7 @@ namespace pcc_bridge {
     }
 
     void PCCBridgeNode::sendFullUpdate() {
+        syncTimer->cancel();
         RCLCPP_INFO(get_logger(), "Syncing PCC state");
 
         ledComponent.sendUpdate();
@@ -46,9 +49,11 @@ namespace pcc_bridge {
         connected = false;
         port.close();
 
-        do {
-            RCLCPP_INFO_THROTTLE(get_logger(), get_clock(), 100, "Searching for a serial port...");
+        auto& clk = *get_clock();
 
+        RCLCPP_INFO(get_logger(), "Searching for a serial port...");
+
+        do {
             for (directory_entry& entry : directory_iterator("/dev")) {
                 std::string name = entry.path().filename().string();
 
@@ -60,6 +65,10 @@ namespace pcc_bridge {
                     } catch (...) {}
                 }
             }
+
+            if (!port.isOpen()) {
+            	RCLCPP_WARN_THROTTLE(get_logger(), clk, 250, "Failed to find port. Retrying...");
+            }
         } while (!port.isOpen());
 
         connected = true;
@@ -67,7 +76,6 @@ namespace pcc_bridge {
     }
 
     void PCCBridgeNode::readLoop() {
-        readTimer->cancel();
         try {
             if (port.isOpen()) {
                 // Read another byte and cycle the queue
@@ -95,7 +103,7 @@ namespace pcc_bridge {
                               switch (message->data[0]) {
                                   case STATUS_READY:
                                       RCLCPP_INFO(get_logger(), "PCC Ready");
-                                      sendFullUpdate();
+                                      syncTimer.reset();
                                       break;
                                   case STATUS_RESET:
                                       RCLCPP_INFO(get_logger(), "PCC Resetting");
@@ -129,7 +137,7 @@ namespace pcc_bridge {
                 }
             } else {
                 // Just to fall over to the outer catch block as well
-                throw std::exception("Port not open");
+                throw std::exception();
             }
         } catch (...) {
             RCLCPP_WARN(get_logger(), "Port not open. Searching...");
@@ -137,12 +145,10 @@ namespace pcc_bridge {
 
             sendFullUpdate();
         }
-        readTimer->reset();
     }
 
     void PCCBridgeNode::sendMessage(message_t *message) {
         message->sol = SOL_NUM;
-        message->identifier = TOPIC_CONVERT(message->identifier);
         append_crc(message);
 
         if (connected.load()) {
@@ -154,10 +160,10 @@ namespace pcc_bridge {
         }
     }
 
-    void PCCBridgeNode::resetCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> _,
-                                      std::shared_ptr<std_srvs::srv::Trigger::Response> _) {
+    void PCCBridgeNode::resetCallback(__attribute__((unused)) const std::shared_ptr<std_srvs::srv::Trigger::Request> _rq,
+                                      __attribute__((unused)) std::shared_ptr<std_srvs::srv::Trigger::Response> _rs) {
         message_t message;
-        message->identifier = TOPIC_RESET;
+        message.identifier = TOPIC_RESET;
 
         sendMessage(&message);
     }

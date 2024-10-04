@@ -18,7 +18,7 @@ namespace pcc_bridge {
 
     void LedComponent::sendUpdate() {
         message_t message;
-        message.identifier = TOPIC_CONVERT(TOPIC_ONBOARD_LED_SET);
+        message.identifier = TOPIC_ONBOARD_LED_SET;
         message.data[0] = red;
         message.data[1] = green;
         message.data[2] = blue;
@@ -26,7 +26,7 @@ namespace pcc_bridge {
     }
 
     void LedComponent::setCallback(const std::shared_ptr<avr_common_interfaces::srv::SetColor::Request> request,
-                                   std::shared_ptr<avr_common_interfaces::srv::SetColor::Response> _) {
+                                   __attribute__((unused)) std::shared_ptr<avr_common_interfaces::srv::SetColor::Response> _) {
         red = request->color.r;
         green = request->color.g;
         blue = request->color.b;

@@ -29,16 +29,18 @@ namespace pcc_bridge
         std::vector<uint8_t> dataQueue;
 
         rclcpp::TimerBase::SharedPtr readTimer;
+        rclcpp::TimerBase::SharedPtr syncTimer;
 
         LedComponent ledComponent;
         ServoComponent servoComponent;
 
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetService;
 
-        void resetCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> _,
-                           std::shared_ptr<std_srvs::srv::Trigger::Response> _);
+        void resetCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> _rq,
+                           std::shared_ptr<std_srvs::srv::Trigger::Response> _rs);
 
         void openPort();
         void sendMessage(message_t *message);
+        void sendFullUpdate();
     };
 }
