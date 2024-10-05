@@ -10,9 +10,11 @@
   <depend>rclcpp</depend>
   <depend>boost</depend>
   <depend>serial</depend>
+  <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>avr_common_interfaces</depend>
   <depend>avr_vmc_pcc_interfaces</depend>
+  <depend>diagnostic_updater</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

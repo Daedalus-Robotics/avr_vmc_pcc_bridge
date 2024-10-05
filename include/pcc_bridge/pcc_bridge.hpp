@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <atomic>
 #include <vector>
 #include <rclcpp/rclcpp.hpp>
@@ -24,6 +25,8 @@ namespace pcc_bridge
 
     private:
         std::atomic<bool> connected;
+        std::mutex isRunningMutex;
+        std::mutex serialSendMutex;
 
         serial::Serial port;
         std::vector<uint8_t> dataQueue;
@@ -34,8 +37,10 @@ namespace pcc_bridge
         LedComponent ledComponent;
         ServoComponent servoComponent;
 
+        rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr eStopSubscriber;
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetService;
 
+        void eStopCallback(const std::shared_ptr<std_msgs::msg::Empty> _msg);
         void resetCallback(const std::shared_ptr<std_srvs::srv::Trigger::Request> _rq,
                            std::shared_ptr<std_srvs::srv::Trigger::Response> _rs);
 

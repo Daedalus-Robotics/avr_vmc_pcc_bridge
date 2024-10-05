@@ -2,6 +2,7 @@
 
 #include "pcc_bridge/topics.h"
 
+
 namespace pcc_bridge {
     ServoComponent::ServoComponent() : enabled(true), microsecondsArr(),
                                        sendMessage() {}
@@ -48,8 +49,6 @@ namespace pcc_bridge {
     }
 
     void ServoComponent::sendUpdate() {
-        sendEnabledUpdate();
-
         message_t message;
         message.identifier = TOPIC_SERVO_SPAN;
         message.data[0] = 0;
@@ -61,6 +60,8 @@ namespace pcc_bridge {
         }
 
         sendMessage(&message);
+
+        sendEnabledUpdate();
     }
 
     void ServoComponent::enabledCallback(const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
