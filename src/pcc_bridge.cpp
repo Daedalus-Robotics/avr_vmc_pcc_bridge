@@ -51,6 +51,7 @@ namespace pcc_bridge {
         RCLCPP_INFO(get_logger(), "Syncing PCC state");
 
         ledComponent.sendUpdate();
+        std::this_thread::sleep_for(50ms);
         servoComponent.sendUpdate();
     }
 
@@ -170,7 +171,7 @@ namespace pcc_bridge {
         if (connected.load()) {
             try {
                 port.write(reinterpret_cast<uint8_t *>(message), MESSAGE_BUF_LEN);
-                std::this_thread::sleep_for(100ms);
+                std::this_thread::sleep_for(50ms);
             } catch (...) {
                 RCLCPP_ERROR(get_logger(), "Failed to send message using serial port");
             }
