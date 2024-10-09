@@ -44,7 +44,7 @@ namespace pcc_bridge {
     void PCCBridgeNode::setup() {
         ledComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
         servoComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
-        //thermalComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
+        thermalComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
     }
 
     void PCCBridgeNode::sendFullUpdate() {
@@ -148,29 +148,28 @@ namespace pcc_bridge {
 	                              }
 	                              break;
                               case TOPIC_THERMAL_ROW_0:
-                              	  RCLCPP_ERROR(get_logger(), "THermalL");
-                                  //thermalComponent.onRowUpdate(0, reinterpret_cast<float *>(message->data));
+                                  thermalComponent.onRowUpdate(0, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_1:
-	                           	  //thermalComponent.onRowUpdate(1, reinterpret_cast<float *>(message->data));
+	                           	  thermalComponent.onRowUpdate(1, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_2:
-	                              //thermalComponent.onRowUpdate(2, reinterpret_cast<float *>(message->data));
+	                              thermalComponent.onRowUpdate(2, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_3:
-	                        	  //thermalComponent.onRowUpdate(3, reinterpret_cast<float *>(message->data));
+	                        	  thermalComponent.onRowUpdate(3, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_4:
-	                        	  //thermalComponent.onRowUpdate(4, reinterpret_cast<float *>(message->data));
+	                        	  thermalComponent.onRowUpdate(4, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_5:
-	                        	  //thermalComponent.onRowUpdate(5, reinterpret_cast<float *>(message->data));
+	                        	  thermalComponent.onRowUpdate(5, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_6:
-	                        	  //thermalComponent.onRowUpdate(6, reinterpret_cast<float *>(message->data));
+	                        	  thermalComponent.onRowUpdate(6, reinterpret_cast<float *>(message->data));
                                   break;
 	                          case TOPIC_THERMAL_ROW_7:
-	                        	  //thermalComponent.onRowUpdate(7, reinterpret_cast<float *>(message->data));
+	                        	  thermalComponent.onRowUpdate(7, reinterpret_cast<float *>(message->data));
                                   break;
 	                          default:
 	                              RCLCPP_WARN(get_logger(), "Invalid topic: %ul", message->identifier);
