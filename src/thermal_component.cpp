@@ -15,5 +15,6 @@ namespace pcc_bridge {
         for (size_t i = 0; i < THERMAL_FRAME_SIZE; i++) {
             frameMessage.data[offset + i] = data[i];
         }
+        framePublisher->publish(frameMessage);
     }
 }
