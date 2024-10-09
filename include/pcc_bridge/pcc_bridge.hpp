@@ -24,8 +24,13 @@ namespace pcc_bridge
 
         void readLoop();
 
-    private:
+        std::function<void()> onStateUpdate;
         std::atomic<bool> connected;
+        std::atomic<uint8_t> lastState;
+        std::atomic<bool> thermalCameraConnected;
+        std::atomic<bool> servoControllerConnected;
+
+    private:
         std::mutex isRunningMutex;
         std::mutex serialSendMutex;
 

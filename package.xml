@@ -15,6 +15,7 @@
   <depend>avr_common_interfaces</depend>
   <depend>avr_vmc_pcc_interfaces</depend>
   <depend>diagnostic_updater</depend>
+  <depend>diagnostic_msgs</depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

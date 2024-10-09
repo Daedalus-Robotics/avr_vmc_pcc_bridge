@@ -21,6 +21,7 @@ find_package(std_srvs REQUIRED)
 find_package(avr_common_interfaces REQUIRED)
 find_package(avr_vmc_pcc_interfaces REQUIRED)
 find_package(diagnostic_updater REQUIRED)
+find_package(diagnostic_msgs REQUIRED)
 
 include_directories(include)
 ament_export_include_directories(include)

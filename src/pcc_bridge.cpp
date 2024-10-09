@@ -4,16 +4,21 @@
 #include <thread>
 #include <chrono>
 #include <boost/filesystem.hpp>
+#include <diagnostic_updater/diagnostic_updater.hpp>
+#include <diagnostic_updater/publisher.hpp>
 
 #include "pcc_bridge/topics.h"
 
 using namespace boost::filesystem;
 using namespace std::chrono_literals;
 
+std::shared_ptr<pcc_bridge::PCCBridgeNode> node;
+
 
 namespace pcc_bridge {
-    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options),
-                                                                       connected(false), isRunningMutex(), serialSendMutex(),
+    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options), onStateUpdate(),
+                                                                       connected(false), lastState(), thermalCameraConnected(), servoControllerConnected(),
+                                                                       isRunningMutex(), serialSendMutex(),
                                                                        port("", 115200), dataQueue(),
                                                                        ledComponent(), servoComponent(), thermalComponent() {
         readTimer = create_wall_timer(1ms, [this] { readLoop(); });
@@ -59,6 +64,7 @@ namespace pcc_bridge {
     void PCCBridgeNode::openPort() {
         connected = false;
         port.close();
+        onStateUpdate();
 
         auto& clk = *get_clock();
 
@@ -80,6 +86,7 @@ namespace pcc_bridge {
             if (port.isOpen()) {
             	connected = true;
                 RCLCPP_INFO(get_logger(), "Port Opened");
+                onStateUpdate();
                 break;
             } else {
             	RCLCPP_WARN_THROTTLE(get_logger(), clk, 250, "Failed to find port. Retrying...");
@@ -119,6 +126,8 @@ namespace pcc_bridge {
 	                                  case STATUS_READY:
 	                                      RCLCPP_INFO(get_logger(), "PCC Ready");
 	                                      syncTimer->reset();
+	                                      thermalCameraConnected = true;
+	                                      servoControllerConnected = true;
 	                                      break;
 	                                  case STATUS_RESET:
 	                                      RCLCPP_INFO(get_logger(), "PCC Resetting");
@@ -126,6 +135,8 @@ namespace pcc_bridge {
 	                                  case STATUS_HALT:
 	                                      RCLCPP_ERROR(get_logger(), "PCC Halted");
 	                              }
+	                              lastState = message->data[0];
+	                              onStateUpdate();
 	                              break;
 	                          case TOPIC_ERROR:
                                   if (message->data[1] != ERROR_TYPE_RESOLVED) {
@@ -135,17 +146,22 @@ namespace pcc_bridge {
 	                                  case COMPONENT_THERMAL:
 	                                      if (message->data[1] == ERROR_TYPE_RESOLVED) {
 	                                          RCLCPP_INFO(get_logger(), "Thermal camera has connected");
+	                                          thermalCameraConnected = true;
 	                                      } else {
 	                                          RCLCPP_ERROR(get_logger(), "Thermal camera has disconnected");
+	                                          thermalCameraConnected = false;
 	                                      }
 	                                      break;
 	                                  case COMPONENT_SERVOS:
 	                                      if (message->data[1] == ERROR_TYPE_RESOLVED) {
 	                                          RCLCPP_INFO(get_logger(), "Servo controller has connected");
+	                                          servoControllerConnected = true;
 	                                      } else {
 	                                          RCLCPP_ERROR(get_logger(), "Servo controller has disconnected");
+	                                          servoControllerConnected = false;
 	                                      }
 	                              }
+	                              onStateUpdate();
 	                              break;
                               case TOPIC_THERMAL_ROW_0:
                                   thermalComponent.onRowUpdate(0, reinterpret_cast<float *>(message->data));
@@ -221,15 +237,44 @@ namespace pcc_bridge {
     }
 }
 
+void pcc_diagnostic(diagnostic_updater::DiagnosticStatusWrapper & stat) {
+    bool connected = node->connected.load();
+    uint8_t lastState = node->lastState.load();
+    bool thermalCameraConnected = node->thermalCameraConnected;
+    bool servoControllerConnected = node->servoControllerConnected;
+
+	bool error = !(connected && (lastState != STATUS_HALT) && thermalCameraConnected && servoControllerConnected);
+	bool warn = node->lastState != STATUS_READY;
+
+	if (error) {
+		stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Something isn\'t great");
+	} else if (warn) {
+		stat.summary(diagnostic_msgs::msg::DiagnosticStatus::WARN, "The current state has a warning");
+	} else {
+		stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "All is good");
+	}
+
+	stat.add("connected", connected);
+	stat.add("state", lastState);
+	stat.add("thermal_connected", thermalCameraConnected);
+	stat.add("servo_connected", servoControllerConnected);
+}
+
 
 int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
 
     const rclcpp::NodeOptions options;
-    std::shared_ptr<pcc_bridge::PCCBridgeNode> node = std::make_shared<pcc_bridge::PCCBridgeNode>(options);
+    node = std::make_shared<pcc_bridge::PCCBridgeNode>(options);
 
-    
+    diagnostic_updater::Updater updater(node);
+    updater.setHardwareID("pcc");
+
+    node->onStateUpdate = [&]{
+    	updater.force_update();
+    };
+    updater.add("PCC Status", pcc_diagnostic);
 
     rclcpp::spin(node);
 
