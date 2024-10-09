@@ -12,6 +12,7 @@
 
 #include "pcc_bridge/led_component.hpp"
 #include "pcc_bridge/servo_component.hpp"
+#include "pcc_bridge/thermal_component.hpp"
 
 namespace pcc_bridge
 {
@@ -36,6 +37,7 @@ namespace pcc_bridge
 
         LedComponent ledComponent;
         ServoComponent servoComponent;
+        ThermalComponent thermalComponent;
 
         rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr eStopSubscriber;
         rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr resetService;

@@ -15,7 +15,7 @@ namespace pcc_bridge {
     PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options),
                                                                        connected(false), isRunningMutex(), serialSendMutex(),
                                                                        port("", 115200), dataQueue(),
-                                                                       ledComponent(), servoComponent() {
+                                                                       ledComponent(), servoComponent(), thermalComponent() {
         readTimer = create_wall_timer(1ms, [this] { readLoop(); });
         syncTimer = create_wall_timer(50ms, [this] { sendFullUpdate(); });
         syncTimer->cancel();
@@ -44,6 +44,7 @@ namespace pcc_bridge {
     void PCCBridgeNode::setup() {
         ledComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
         servoComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
+        //thermalComponent.setup(reinterpret_cast<rclcpp::Node *>(this), [this](message_t *message) { sendMessage(message); });
     }
 
     void PCCBridgeNode::sendFullUpdate() {
@@ -127,7 +128,9 @@ namespace pcc_bridge {
 	                              }
 	                              break;
 	                          case TOPIC_ERROR:
-	                              RCLCPP_ERROR(get_logger(), "Got error: %u", message->data[0]);
+                                  if (message->data[1] != ERROR_TYPE_RESOLVED) {
+	                                  RCLCPP_ERROR(get_logger(), "Got error: %u", message->data[0]);
+                                  }
 	                              switch (message->data[0]) {
 	                                  case COMPONENT_THERMAL:
 	                                      if (message->data[1] == ERROR_TYPE_RESOLVED) {
@@ -144,6 +147,31 @@ namespace pcc_bridge {
 	                                      }
 	                              }
 	                              break;
+                              case TOPIC_THERMAL_ROW_0:
+                              	  RCLCPP_ERROR(get_logger(), "THermalL");
+                                  //thermalComponent.onRowUpdate(0, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_1:
+	                           	  //thermalComponent.onRowUpdate(1, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_2:
+	                              //thermalComponent.onRowUpdate(2, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_3:
+	                        	  //thermalComponent.onRowUpdate(3, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_4:
+	                        	  //thermalComponent.onRowUpdate(4, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_5:
+	                        	  //thermalComponent.onRowUpdate(5, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_6:
+	                        	  //thermalComponent.onRowUpdate(6, reinterpret_cast<float *>(message->data));
+                                  break;
+	                          case TOPIC_THERMAL_ROW_7:
+	                        	  //thermalComponent.onRowUpdate(7, reinterpret_cast<float *>(message->data));
+                                  break;
 	                          default:
 	                              RCLCPP_WARN(get_logger(), "Invalid topic: %ul", message->identifier);
 	                        }
@@ -201,6 +229,8 @@ int main(int argc, char *argv[])
 
     const rclcpp::NodeOptions options;
     std::shared_ptr<pcc_bridge::PCCBridgeNode> node = std::make_shared<pcc_bridge::PCCBridgeNode>(options);
+
+    
 
     rclcpp::spin(node);
 

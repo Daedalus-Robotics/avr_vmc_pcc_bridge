@@ -20,11 +20,12 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(avr_common_interfaces REQUIRED)
 find_package(avr_vmc_pcc_interfaces REQUIRED)
+find_package(diagnostic_updater REQUIRED)
 
 include_directories(include)
 ament_export_include_directories(include)
 
-add_executable(pcc_bridge_node src/pcc_bridge.cpp src/crc15can.cpp src/led_component.cpp src/servo_component.cpp)
+add_executable(pcc_bridge_node src/pcc_bridge.cpp src/crc15can.cpp src/led_component.cpp src/servo_component.cpp src/thermal_component.cpp)
 target_link_libraries(pcc_bridge_node ${Boost_FILESYSTEM_LIBRARY})
 ament_target_dependencies(pcc_bridge_node rclcpp serial std_msgs std_srvs avr_common_interfaces avr_vmc_pcc_interfaces)
 target_include_directories(pcc_bridge_node PUBLIC
