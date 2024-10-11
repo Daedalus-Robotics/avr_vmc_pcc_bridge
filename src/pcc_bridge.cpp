@@ -16,7 +16,7 @@ std::shared_ptr<pcc_bridge::PCCBridgeNode> node;
 
 
 namespace pcc_bridge {
-    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options), onStateUpdate(),
+    PCCBridgeNode::PCCBridgeNode(const rclcpp::NodeOptions &options) : Node("pcc_bridge", "pcc", options), onStateUpdate([]{}),
                                                                        connected(false), lastState(), thermalCameraConnected(), servoControllerConnected(),
                                                                        isRunningMutex(), serialSendMutex(),
                                                                        port("", 115200), dataQueue(),

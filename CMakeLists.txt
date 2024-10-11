@@ -28,7 +28,7 @@ ament_export_include_directories(include)
 
 add_executable(pcc_bridge_node src/pcc_bridge.cpp src/crc15can.cpp src/led_component.cpp src/servo_component.cpp src/thermal_component.cpp)
 target_link_libraries(pcc_bridge_node ${Boost_FILESYSTEM_LIBRARY})
-ament_target_dependencies(pcc_bridge_node rclcpp serial std_msgs std_srvs avr_common_interfaces avr_vmc_pcc_interfaces)
+ament_target_dependencies(pcc_bridge_node rclcpp serial std_msgs std_srvs avr_common_interfaces avr_vmc_pcc_interfaces diagnostic_updater diagnostic_msgs)
 target_include_directories(pcc_bridge_node PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:include>)
