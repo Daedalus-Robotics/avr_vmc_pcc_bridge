@@ -14,6 +14,12 @@ namespace pcc_bridge {
                 setCallback(request, response);
             }
         );
+        effectService = node->create_service<avr_vmc_pcc_interfaces::srv::SetLedEffect>(
+            "set_led_effect",
+            [this](std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetLedEffect::Request> request, std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetLedEffect::Response> response) {
+                effectCallback(request, response);
+            }
+        );
     }
 
     void LedComponent::sendUpdate() {
@@ -32,5 +38,17 @@ namespace pcc_bridge {
         blue = request->color.b;
 
         sendUpdate();
+    }
+
+    void LedComponent::effectCallback(const std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetLedEffect::Request> request,
+                                      __attribute__((unused)) std::shared_ptr<avr_vmc_pcc_interfaces::srv::SetLedEffect::Response> _) {
+        message_t message;
+        message.identifier = TOPIC_LED_STRIP_MODE;
+        message.data[0] = request->mode;
+        message.data[1] = request->r;
+        message.data[2] = request->g;
+        message.data[3] = request->b;
+        message.data[4] = request->arg;
+        sendMessage(&message);
     }
 }
